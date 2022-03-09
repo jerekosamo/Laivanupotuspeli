@@ -1,0 +1,15 @@
+#pragma once
+#include <string>
+using namespace std;
+void laivanupotuspeli(int taulukko1[][7], char taulukko[][7]);
+void Lopeta();
+void Arvolaivat(int taulukko1[][7], char taulukko[][7]);
+void Pelaa(int taulukko1[][7], char taulukko[][7], int *osumat, int *laiva2, int *laiva3, int *laiva4, int *laiva5, int *huti);
+void Syotalaivat(int taulukko1[][7], char taulukko[][7]);
+void osumatarkistus(int taulukko1[][7], char taulukko[][7], int laivankoko, int *osumat);
+void laivanupotus(int taulukko1[][7], char taulukko[][7], int laivankoko);
+bool laillinensuunta(char *suunta, string kirjaimet);
+void printtaulukko(int taul[7][7]);
+void printShots(char taul[7][7]);
+int muunnaAmpumiskoordinaatti(string koordinaatti, int &sarake, int &rivi);
+
