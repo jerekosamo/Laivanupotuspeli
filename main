@@ -1,0 +1,16 @@
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+#include "Header.h"
+using namespace std;
+
+int main() { // p��ohjelma
+	int taulukko1[7][7]; //laivataulukko
+	memset(taulukko1, 0, 196); // nollataan laivataulukko
+	char taulukko[7][7]; // ampumataulukko
+	memset(taulukko, ' ', 49); // nollataan ampumataulukko
+	laivanupotuspeli(taulukko1, taulukko); // aloittaa pelin p��valikon aliohjelman
+	system("pause");
+	return 0;
+}
