@@ -1,0 +1,834 @@
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+#include "Header.h"
+
+using namespace std;
+
+int muunnaAmpumiskoordinaatti(string koordinaatti, int &sarake, int &rivi) { // katsoo onko koordinaatti laillinen ja muuttaa sen indeksiksi
+	const int E_SUCCESS = 0; // alustus
+	const int E_KOORD_VAARIN = 1;
+	unsigned int x = 0;
+	while (x < koordinaatti.length() && ' ' == koordinaatti[x]) { // katsoo tyhj�t v�lit pois
+		x++;
+	}
+	if (x < koordinaatti.length() && ('A' <= toupper(koordinaatti[x]) && toupper(koordinaatti[x]) <= 'G')) { // jos koordinaatti on v�lilt� A-G
+		sarake = toupper(koordinaatti[x]) - 'A'; // muuttaa indeksiksi
+		x++;
+	}
+	else {
+		return E_KOORD_VAARIN; // palauttaa falsen
+	}
+	if (x < koordinaatti.length() && ('1' <= koordinaatti[x] && koordinaatti[x] <= '7')) { // joskoordinaatti on v�lilt� 1-7
+		rivi = koordinaatti[x] - '1'; // muuttaa indeksiksi
+		x++; 
+	}
+	else {
+		return E_KOORD_VAARIN; // palauttaa falsen
+	}
+	while (x < koordinaatti.length() && ' ' == koordinaatti[x]) { // katsoo tyhj�t v�lit pois
+		x++;
+	}
+	if (koordinaatti.length() == x) { // jos koordinaatin pituus sama kuin x
+		return E_SUCCESS; // palauttaa true
+	}
+	else {
+		return E_KOORD_VAARIN; // palauttaa false
+	}
+
+}
+
+void printShots(char taul[7][7]) { // tulostaa ampumataulukon
+	int vaaka[7] = { 1,2,3,4,5,6,7 };
+	char pysty[7] = { 'A','B','C','D','E','F','G' };
+	cout << "\n\n\n" << "Pelitilanne on seuraava: " << "\n" << "    ";
+	for (int i = 0; i < 7; i++) {
+		cout << vaaka[i] << " ";
+	}
+	cout << "\n" << "  ";
+	for (int i = 0; i < 17; i++) {
+		cout << "-";
+	}
+	for (int i = 0; i < 7; i++) {
+		cout << "\n" << pysty[i] << " | ";
+		for (int j = 0; j < 7; j++) {
+			cout << taul[i][j] << " ";
+		}
+		cout << "| " << pysty[i];
+	}
+	cout << "\n" << "  ";
+	for (int i = 0; i < 17; i++) {
+		cout << "-";
+	}
+	cout << "\n" << "    ";
+	for (int i = 0; i < 7; i++) {
+		cout << vaaka[i] << " ";
+	}
+
+}
+
+void printtaulukko(int taul[7][7]) { // tulostaa laivataulukon
+	int vaaka[7] = { 1,2,3,4,5,6,7 };
+	char pysty[7] = { 'A','B','C','D','E','F','G' };
+	cout << "\n\n\n" << "Laivat ovat seuraavasti: " << "\n" << "    ";
+	for (int i = 0; i < 7; i++) {
+		cout << vaaka[i] << " ";
+	}
+	cout << "\n" << "  ";
+	for (int i = 0; i < 17; i++) {
+		cout << "-";
+	}
+	for (int i = 0; i < 7; i++) {
+		cout << "\n" << pysty[i] << " | ";
+		for (int j = 0; j < 7; j++) {
+			cout << taul[i][j] << " ";
+		}
+		cout << "| " << pysty[i];
+	}
+	cout << "\n" << "  ";
+	for (int i = 0; i < 17; i++) {
+		cout << "-";
+	}
+	cout << "\n" << "    ";
+	for (int i = 0; i < 7; i++) {
+		cout << vaaka[i] << " ";
+	}
+}
+
+bool laillinensuunta(char *suunta, string kirjaimet) { // Tarkistaa suunnan laillisuuden
+	for (unsigned int i = 0; i < kirjaimet.length(); i++) { // k�y l�pi onko sy�tetty suunta laillisten suuntien joukossa
+		if (*suunta == kirjaimet[i]) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void laivanupotus(int taulukko1[][7], char taulukko[][7], int laivankoko) { // muuttaa osuma merkit upotus merkiksi jos laiva on ammuttu kokonaan
+	for (int i = 0; i < 7; i++) { // k�y taulukon jokaisen kohdan l�pi
+		for (int j = 0; j < 7; j++) {
+			if (taulukko1[i][j] == laivankoko) { // jos kohdassa on laiva jollain koolla
+				taulukko[i][j] = '#'; // sijoittaa upotus merkin
+			}
+		}
+	}
+}
+
+void osumatarkistus(int taulukko1[][7], char taulukko[][7], int laivankoko, int *osumat) { //tarkistaa monesti laivaan on osuttu ja uppoaako se
+	if (*osumat < laivankoko) { // jos osumat v�hemm�n kuin laivankoko
+		system("CLS"); // tyhjent�� t�h�n menness�
+		printShots(taulukko); // tulostaa ampumataulukon
+		cout << "\nOsuma!\n";
+	}
+	else { // jos laiva uppoaa
+		system("CLS"); // tyhjent�� t�h�n menness�
+		laivanupotus(taulukko1, taulukko, laivankoko); // sijoittaa # laivan kohdalle
+		printShots(taulukko); // tulostaa ampumataulukon
+		cout << "\nOsui ja upposi!\n";
+	}
+}
+
+void Syotalaivat(int taulukko1[][7], char taulukko[][7]) { // Laivojen sy�tt� pelitaulukkoon
+	cout << "Valintasi: Sy\x94t\x84 laivat. Sy\x94t\x84 kirjain ja numero per\x84kk\x84in esim. A4 ja sy\x94t\x84 laivat pituudelta 2,3,4,5\n";
+	memset(taulukko1, 0, 196); // tyhjennet��n taulukot
+	memset(taulukko, ' ', 49);
+	string suunnat = "pPeEiIlL"; // lailliset suunnat
+	string suunta; // alustukset
+	string koordinaatit;
+	int arvo, sarake, rivi;
+	int a = 2;
+	for (int i = 2; i < 6; i++) { // niinkauan kuin laivat on sijoitettu 
+		printtaulukko(taulukko1); // tulostetaan taulukko mihin laivoja sy�tet��n
+		if (a == 2) { // jos laiva on 2 pituinen,  a toimii laivan pituutena
+			cout << "\nSy\x94t\x84 2 ruudun pituisen laivan";
+		}
+		else if (a == 3) {
+			cout << "\nSy\x94t\x84 3 ruudun pituisen laivan";
+		}
+		else if (a == 4) {
+			cout << "\nSy\x94t\x84 4 ruudun pituisen laivan";
+		}
+		else if (a == 5) {
+			cout << "\nSy\x94t\x84 5 ruudun pituisen laivan";
+		}
+		cout << " alku koordinaatti (A-G & 1-7): \n";
+		cin >> koordinaatit; // luetaan sy�tetyt koordinaatit
+		arvo = muunnaAmpumiskoordinaatti(koordinaatit, sarake, rivi); // tarkistaa koordinaattien laillisuuden ja muuttaa indekseiksi, antaa joko arvon 0 jos laillinen tai 1 jos laiton
+		if (arvo == 0) { // jos sy�tettiin lailliset koordinaatit
+			cout << "Sy\x94t\x84 laivan suunta: (pohjoinen = p, etel\x84 = e, it\x84 = i, l\x84nsi = l)\n";
+			cin >> suunta; // luetaan sy�tt�m� suunta
+			char suunta1 = suunta[0]; // luetaan ensimm�inen sy�tt�m� arvo
+			while (a == 5) { // kunnes 5 pituinen laiva on sy�tetty
+				if (suunta.length() != 1) { // jos sy�tettiin virheellinen suunta
+					cout << "virheellinen suunta!\n";
+					i--; // v�hennet��n alkuper�isen for:n countteria
+					break; // poistuu loopista
+				}
+				else {
+					if (laillinensuunta(&suunta1, suunnat)) { // tarkastaa suunnan laillisuuden
+						if (suunta1 == 'p' || suunta1 == 'P') { // jos sy�tettiin pohjoinen suunnaksi
+							if ((sarake - 4) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake - 1][rivi] == 0 && taulukko1[sarake - 2][rivi] == 0 && taulukko1[sarake - 3][rivi] == 0 && taulukko1[sarake - 4][rivi] == 0) { // jos laiva voidaan sy�tt�� kohtaan
+								taulukko1[sarake][rivi] = i; // sijoitetaan laiva
+								taulukko1[sarake - 1][rivi] = i;
+								taulukko1[sarake - 2][rivi] = i;
+								taulukko1[sarake - 3][rivi] = i;
+								taulukko1[sarake - 4][rivi] = i;
+								a++; // lis�� laivan counteria kun laiva on arvottu
+								break; // poistuu loopista
+							}
+							else { // jos suunta on virheellinen
+								cout << "Virheellinen suunta!";
+								i--; // v�hennet��n for:n counteria
+								break; // poistutaan loopista
+							}
+						}
+						else if (suunta1 == 'e' || suunta1 == 'E') { // jos suunta on etel�
+							if ((sarake + 4) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake + 1][rivi] == 0 && taulukko1[sarake + 2][rivi] == 0 && taulukko1[sarake + 3][rivi] == 0 && taulukko1[sarake + 4][rivi] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake + 1][rivi] = i;
+								taulukko1[sarake + 2][rivi] = i;
+								taulukko1[sarake + 3][rivi] = i;
+								taulukko1[sarake + 4][rivi] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "Virheellinen suunta!";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'i' || suunta1 == 'I') { // jos suunta on it�
+							if ((rivi + 4) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi + 1] == 0 && taulukko1[sarake][rivi + 2] == 0 && taulukko1[sarake][rivi + 3] == 0 && taulukko1[sarake][rivi + 4] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake][rivi + 1] = i;
+								taulukko1[sarake][rivi + 2] = i;
+								taulukko1[sarake][rivi + 3] = i;
+								taulukko1[sarake][rivi + 4] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "Virheellinen suunta!";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'l' || suunta1 == 'L') { // jos suunta on l�nsi
+							if ((rivi - 4) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi - 1] == 0 && taulukko1[sarake][rivi - 2] == 0 && taulukko1[sarake][rivi - 3] == 0 && taulukko1[sarake][rivi - 4] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake][rivi - 1] = i;
+								taulukko1[sarake][rivi - 2] = i;
+								taulukko1[sarake][rivi - 3] = i;
+								taulukko1[sarake][rivi - 4] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "Virheellinen suunta!";
+								i--;
+								break;
+							}
+						}
+					}
+				}
+			}
+			while (a == 4) { // kunnes 4 pituinen laiva on sy�tetty
+				if (suunta.length() != 1) {
+					cout << "virheellinen suunta!\n";
+					i--;
+					break;
+				}
+				else {
+					if (laillinensuunta(&suunta1, suunnat)) {
+						if (suunta1 == 'p' || suunta1 == 'P') {
+							if ((sarake - 3) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake - 1][rivi] == 0 && taulukko1[sarake - 2][rivi] == 0 && taulukko1[sarake - 3][rivi] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake - 1][rivi] = i;
+								taulukko1[sarake - 2][rivi] = i;
+								taulukko1[sarake - 3][rivi] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'e' || suunta1 == 'E') {
+							if ((sarake + 3) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake + 1][rivi] == 0 && taulukko1[sarake + 2][rivi] == 0 && taulukko1[sarake + 3][rivi] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake + 1][rivi] = i;
+								taulukko1[sarake + 2][rivi] = i;
+								taulukko1[sarake + 3][rivi] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'i' || suunta1 == 'I') {
+							if ((rivi + 3) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi + 1] == 0 && taulukko1[sarake][rivi + 2] == 0 && taulukko1[sarake][rivi + 3] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake][rivi + 1] = i;
+								taulukko1[sarake][rivi + 2] = i;
+								taulukko1[sarake][rivi + 3] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'l' || suunta1 == 'L') {
+							if ((rivi - 3) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi - 1] == 0 && taulukko1[sarake][rivi - 2] == 0 && taulukko1[sarake][rivi - 3] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake][rivi - 1] = i;
+								taulukko1[sarake][rivi - 2] = i;
+								taulukko1[sarake][rivi - 3] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+					}
+				}
+			}
+			while (a == 3) { // kunnes kolmen pituinen laiva on sijoitettu
+				if (suunta.length() != 1) {
+					cout << "virheellinen suunta!\n";
+					i--;
+					break;
+				}
+				else {
+					if (laillinensuunta(&suunta1, suunnat)) {
+						if (suunta1 == 'p' || suunta1 == 'P') {
+							if ((sarake - 2) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake - 1][rivi] == 0 && taulukko1[sarake - 2][rivi] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake - 1][rivi] = i;
+								taulukko1[sarake - 2][rivi] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'e' || suunta1 == 'E') {
+							if ((sarake + 2) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake + 1][rivi] == 0 && taulukko1[sarake + 2][rivi] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake + 1][rivi] = i;
+								taulukko1[sarake + 2][rivi] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'i' || suunta1 == 'I') {
+							if ((rivi + 2) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi + 1] == 0 && taulukko1[sarake][rivi + 2] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake][rivi + 1] = i;
+								taulukko1[sarake][rivi + 2] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'l' || suunta1 == 'L') {
+							if ((rivi - 2) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi - 1] == 0 && taulukko1[sarake][rivi - 2] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake][rivi - 1] = i;
+								taulukko1[sarake][rivi - 2] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+					}
+				}
+			}
+			while (a == 2) { // kunnes 2 pituinen laiva on sijoitettu
+				if (suunta.length() != 1) {
+					cout << "virheellinen suunta!\n";
+					i--;
+					break;
+				}
+				else {
+					if (laillinensuunta(&suunta1, suunnat)) {
+						if (suunta1 == 'p' || suunta1 == 'P') {
+							if ((sarake - 1) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake - 1][rivi] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake - 1][rivi] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'e' || suunta1 == 'E') {
+							if ((sarake + 1) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake + 1][rivi] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake + 1][rivi] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'i' || suunta1 == 'I') {
+							if ((rivi + 1) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi + 1] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake][rivi + 1] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+						else if (suunta1 == 'l' || suunta1 == 'L') {
+							if ((rivi - 1) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi - 1] == 0) {
+								taulukko1[sarake][rivi] = i;
+								taulukko1[sarake][rivi - 1] = i;
+								a++;
+								break;
+							}
+							else {
+								cout << "virheellinen suunta!\n";
+								i--;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		else { // jos sy�tettiin virheellinen koordinaatti
+			cout << "Sy\x94tit virheellisen koordinaatin\n";
+			i--;
+		}
+	}
+	printtaulukko(taulukko1); // tulostetaan laivataulukko laivojen sy�t�n j�lkeen
+}
+
+void Pelaa(int taulukko1[][7], char taulukko[][7], int *osumat, int *laiva2, int *laiva3, int *laiva4, int *laiva5, int *huti) { // Pelin pelaaminen
+	system("CLS"); // Tyhjennet��n t�h�n menness�
+	cout << "Valintasi: Pelaa\n";
+	printShots(taulukko); // tulostetaan ampumataulu
+	string koordinaatit; // alustukset
+	int arvo, sarake, rivi;
+	int i = *osumat; // osumien countteri
+	for (i; i < 14; i++) { // niin kauan kuin osumia on v�hemm�n kuin laivoihin voi osua
+		*osumat = i; // for:n counteri on osumien countteri
+		cout << "\nSy\x94t\x84 ampuma koordinaatti: (kirjain ja numero esim. B2) jos haluat lopettaa sy\x94t\x84 L\n";
+		cin >> koordinaatit;
+		arvo = muunnaAmpumiskoordinaatti(koordinaatit, sarake, rivi); // / jos koordinaatit ovat laillisia arvo saa arvon 0 ja muuttaa koordinaatit indeksiksi 
+		if (arvo == 0) { // jos koordinaatit ovat lailliset
+			if (taulukko[sarake][rivi] == ' ') { // jos kohtaan ei ole viel� ammuttu
+				if (taulukko1[sarake][rivi] == 2 || taulukko1[sarake][rivi] == 3 || taulukko1[sarake][rivi] == 4 || taulukko1[sarake][rivi] == 5) { // jos koordinaatit osuvat laivaan
+					taulukko[sarake][rivi] = '*'; // Sijoitetaan kohtaan osuman merkki
+					if (taulukko1[sarake][rivi] == 2) { // Jos osuttiin 2 pituiseen laivaan
+						*laiva2 += 1; // laivan osuma countteria lis�t��n yhdell�
+						osumatarkistus(taulukko1, taulukko, 2, laiva2); // tarkistaa uppoaako laiva vai ei
+					}
+					if (taulukko1[sarake][rivi] == 3) { // jos osuttiin 3 pituiseen laivaan ja niin edelleen samanlailla kuin ylemp�n� mutta eri laivan koolla
+						*laiva3 += 1; 
+						osumatarkistus(taulukko1, taulukko, 3, laiva3);
+					}
+					if (taulukko1[sarake][rivi] == 4) {
+						*laiva4 += 1;
+						osumatarkistus(taulukko1, taulukko, 4, laiva4);
+					}
+					if (taulukko1[sarake][rivi] == 5) {
+						*laiva5 += 1;
+						osumatarkistus(taulukko1, taulukko, 5, laiva5);
+					}
+
+				}
+				else {
+					system("CLS"); // tyhjennet��n t�h�n menness�
+					taulukko[sarake][rivi] = 'x'; // sijoitetaan huti merkki
+					printShots(taulukko); // tulostetaan ampumataulukko
+					cout << "\nHuti!\n";
+					*huti+= 1; //lis�t��n huti counteria yhdell�
+					i--; // v�hennet��n osuma counteria yhdell� koska se nousee aina kun for lause menee l�pi
+				}
+			}
+			else { // jos ammuttiin samaan koordinaattiin
+				cout << "\nVIRHE! Ammuit samaan koordinaattiin mhin olet jo ampunut.\n";
+				i--;
+			}
+		}
+		else if (koordinaatit == "\\@") { // jos sy�tet��n vakoilu
+			cout << "Valitsit vakoilun\n";
+			printtaulukko(taulukko1); // n�ytet��n laivojen sijainnit
+			i--;
+		}
+		else if (koordinaatit == "l" || koordinaatit == "L") { // Jos valittiin pelin lopetus
+			system("CLS"); // tyhjennet��n t�h�n menness�
+			i--;
+			break;
+		}
+		else { // jos sy�tettiin virheellinen koordinaatti
+			cout << "Sy\x94tit virheellisen koordinaatin\n";
+			i--;
+		}
+	}
+}
+
+void Arvolaivat(int taulukko1[][7], char taulukko[][7]) { // Arpoo laivat taulukkoon
+	cout << "Valintasi: Arvo laivojen sijainnit\n";
+	cout << "Odota hetki\n";
+	memset(taulukko1, 0, 196); // nollataan molemmat taulukot kun laivat arvotaan
+	memset(taulukko, ' ', 49);
+	string suunnat = "pPeEiIlL"; // mahdolliset suunnat laivoille
+	int a = 2; // toimii counterina ja samalla laivankokona
+
+	string koordinaatit;
+	int suunta, sarake, rivi;
+	for (int i = 2; i < 6; i++) { //kunnes laivat 2-5 arvottu taulukkoon
+		srand((unsigned)time(0)); // nollataan arvotut luvut
+		while (a == 5) { // kun arvotaan 5 pitk�n laivan paikkaa
+			sarake = rand() % 7; //Arvotaan sarake, rivi ja suunta
+			rivi = rand() % 7;
+			suunta = rand() % 4;
+			if (suunta == 0) { // arvottu suunta on l�nsi
+				if ((sarake - 4) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake - 1][rivi] == 0 && taulukko1[sarake - 2][rivi] == 0 && taulukko1[sarake - 3][rivi] == 0 && taulukko1[sarake - 4][rivi] == 0) { // katsotaan ett� sy�tt� kohtaan on laillinen
+					taulukko1[sarake][rivi] = i; // sijotetaan laiva
+					taulukko1[sarake - 1][rivi] = i;
+					taulukko1[sarake - 2][rivi] = i;
+					taulukko1[sarake - 3][rivi] = i;
+					taulukko1[sarake - 4][rivi] = i;
+					cout << ".";
+					a++; // vaihdetaan seuraavaan laivaan eli t�ss� kohtaa lopettaa arpomien
+					break; // poistuu loopista
+				}
+				else {
+					i--; // v�hennet��n counteria koska laivaa ei ole viel� arvottu
+					break;
+				}
+			}
+			if (suunta == 1) { // Jos suunta on it�
+				if ((sarake + 4) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake + 1][rivi] == 0 && taulukko1[sarake + 2][rivi] == 0 && taulukko1[sarake + 3][rivi] == 0 && taulukko1[sarake + 4][rivi] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake + 1][rivi] = i;
+					taulukko1[sarake + 2][rivi] = i;
+					taulukko1[sarake + 3][rivi] = i;
+					taulukko1[sarake + 4][rivi] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			if (suunta == 2) { // jos suunta on pohjoinen
+				if ((rivi - 4) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi - 1] == 0 && taulukko1[sarake][rivi - 2] == 0 && taulukko1[sarake][rivi - 3] == 0 && taulukko1[sarake][rivi - 4] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake][rivi - 1] = i;
+					taulukko1[sarake][rivi - 2] = i;
+					taulukko1[sarake][rivi - 3] = i;
+					taulukko1[sarake][rivi - 4] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			if (suunta == 3) { // jos suunta on etel�
+				if ((rivi + 4) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi + 1] == 0 && taulukko1[sarake][rivi + 2] == 0 && taulukko1[sarake][rivi + 3] == 0 && taulukko1[sarake][rivi + 4] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake][rivi + 1] = i;
+					taulukko1[sarake][rivi + 2] = i;
+					taulukko1[sarake][rivi + 3] = i;
+					taulukko1[sarake][rivi + 4] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+		}
+		while (a == 4) { // arvotaan 4 pituinen laiva
+			sarake = rand() % 7; // arvotaan laivan paikka ja suunta
+			rivi = rand() % 7;
+			suunta = rand() % 4;
+			if (suunta == 0) { // jos suunta on l�nsi
+				if ((sarake - 3) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake - 1][rivi] == 0 && taulukko1[sarake - 2][rivi] == 0 && taulukko1[sarake - 3][rivi] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake - 1][rivi] = i;
+					taulukko1[sarake - 2][rivi] = i;
+					taulukko1[sarake - 3][rivi] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			if (suunta == 1) { // jos suunta on it�
+				if ((sarake + 3) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake + 1][rivi] == 0 && taulukko1[sarake + 2][rivi] == 0 && taulukko1[sarake + 3][rivi] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake + 1][rivi] = i;
+					taulukko1[sarake + 2][rivi] = i;
+					taulukko1[sarake + 3][rivi] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			if (suunta == 2) { // jos suunta on pohjoinen
+				if ((rivi - 3) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi - 1] == 0 && taulukko1[sarake][rivi - 2] == 0 && taulukko1[sarake][rivi - 3] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake][rivi - 1] = i;
+					taulukko1[sarake][rivi - 2] = i;
+					taulukko1[sarake][rivi - 3] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			if (suunta == 3) { //jos suunta on etel�
+				if ((rivi + 3) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi + 1] == 0 && taulukko1[sarake][rivi + 2] == 0 && taulukko1[sarake][rivi + 3] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake][rivi + 1] = i;
+					taulukko1[sarake][rivi + 2] = i;
+					taulukko1[sarake][rivi + 3] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+		}
+		while (a == 3) { // arvotaan 3 pituinen laiva
+			sarake = rand() % 7;
+			rivi = rand() % 7;
+			suunta = rand() % 4;
+			if (suunta == 0) {
+				if ((sarake - 2) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake - 1][rivi] == 0 && taulukko1[sarake - 2][rivi] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake - 1][rivi] = i;
+					taulukko1[sarake - 2][rivi] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			else if (suunta == 1) {
+				if ((sarake + 2) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake + 1][rivi] == 0 && taulukko1[sarake + 2][rivi] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake + 1][rivi] = i;
+					taulukko1[sarake + 2][rivi] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			else if (suunta == 2) {
+				if ((rivi + 2) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi + 1] == 0 && taulukko1[sarake][rivi + 2] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake][rivi + 1] = i;
+					taulukko1[sarake][rivi + 2] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			else if (suunta == 3) {
+				if ((rivi - 2) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi - 1] == 0 && taulukko1[sarake][rivi - 2] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake][rivi - 1] = i;
+					taulukko1[sarake][rivi - 2] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+		}
+		while (a == 2) { // arvotaan 2 pituinen laiva
+			sarake = rand() % 7;
+			rivi = rand() % 7;
+			suunta = rand() % 4;
+			if (suunta == 0) {
+				if ((sarake - 1) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake - 1][rivi] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake - 1][rivi] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			else if (suunta == 1) {
+				if ((sarake + 1) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake + 1][rivi] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake + 1][rivi] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			else if (suunta == 2) {
+				if ((rivi - 1) >= 0 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi - 1] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake][rivi - 1] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			else if (suunta == 3) {
+				if ((rivi + 1) <= 6 && taulukko1[sarake][rivi] == 0 && taulukko1[sarake][rivi + 1] == 0) {
+					taulukko1[sarake][rivi] = i;
+					taulukko1[sarake][rivi + 1] = i;
+					cout << ".";
+					a++;
+					break;
+				}
+				else {
+					i--;
+					break;
+				}
+			}
+			
+		}
+	}
+	cout << "\nLaivat arvottu.\n";
+	//printtaulukko(taulukko1); // Jos haluaa n�hd� mihin laivat on arvottu
+}
+
+void Lopeta() { // Tulostaa pelin lopetus valinnan
+	cout << "Valintasi: Lopeta\n";
+}
+
+void laivanupotuspeli(int taulukko1[][7], char taulukko[][7]) { // Pelin p��valikko
+	int osumat = 0; // alustetaan counterit
+	int huti = 0;
+	int laiva2 = 0;
+	int laiva3 = 0;
+	int laiva4 = 0;
+	int laiva5 = 0;
+	string valinta;
+	char luku = '0';
+	bool laivatsijoitettu = false; // alustetaan laivansijoitus tekem�tt�m�ksi
+	while (luku != 'L') { // p��valikko niin kauan kuin peli lopetetaan
+		cout << "Laivanupotuspeli\n================\n\nValinnat:\n1) Sy\x94t\x84 laivat\n2) Pelaa\n3) Arvo laivojen sijainnit\nL) Lopeta\n";
+		cin >> valinta; // luetaan k�ytt�j�n valinta
+		luku = valinta[0]; // Luetaan vain ensimm�inen sy�tt�
+		if (luku == '1') { 
+			Syotalaivat(taulukko1, taulukko); // Aloittaa laivansijoitus aliohjelman
+			laivatsijoitettu = true; // laivat on sijoitettu
+		}
+		else if (luku == '2') {
+			if (laivatsijoitettu == false) { // Katsoo ett� laivat on sijoitettu taulukkoon ennen pelaamista
+				cout << "\nEt ole sijoittanut laivoja.\n";
+			}
+			else {
+				Pelaa(taulukko1, taulukko, &osumat, &laiva2, &laiva3, &laiva4, &laiva5, &huti); // Pelaamisen aliohjelma
+				if (osumat >= 13) { // Kun laivat on upotettu
+					cout << "\nVoitit pelin " << (huti+14) << " yrityksell\x84, joista "<< huti << " olivat ohi laivoista.\n";
+					laivatsijoitettu = false; // laivoja ei ole viel� sijoitettu uuteen peliin
+					osumat = 0; // nollataan counterit
+					laiva2 = 0;
+					laiva3 = 0;
+					laiva4 = 0;
+					laiva5 = 0;
+					huti = 0;
+				}
+			}
+		}
+		else if (luku == '3') {
+			Arvolaivat(taulukko1, taulukko); // Laivojen arpomis aliojelma
+			laivatsijoitettu = true; // Laivat sijoitettu
+		}
+		else if (luku == 'L' || luku == 'l') { // lopettaa pelin
+			Lopeta();
+			break; // Lopettaa loopin ja ohjelma p��ttyy
+		}
+		else { // Jos sy�tet��n v��r� arvo
+			cout << "\nSy\x94tit virheellisen valinnan.\n";
+		}
+	}
+}
